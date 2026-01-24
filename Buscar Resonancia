@@ -1,0 +1,32 @@
+// Pines y variables globales
+const int sensorPin = 34;      // Salida del circuito de filtrado (ADC)
+volatile unsigned long lastEarthPulse = 0;
+volatile float earthFrequency = 0;
+bool isLocked = false;
+
+// Interrupción para detectar el cruce por cero de la señal de la Tierra
+void IRAM_ATTR onEarthPulse() {
+    unsigned long now = micros();
+    unsigned long delta = now - lastEarthPulse;
+    earthFrequency = 1000000.0 / delta;
+    lastEarthPulse = now;
+}
+
+void setup() {
+    Serial.begin(115200);
+    pinMode(sensorPin, INPUT);
+    // Configuramos interrupción por flanco de subida
+    attachInterrupt(digitalPinToInterrupt(sensorPin), onEarthPulse, RISING);
+}
+
+void loop() {
+    // Verificamos si la frecuencia está en el rango de la Resonancia de Schumann (7.83Hz)
+    if (earthFrequency > 7.7 && earthFrequency < 8.0) {
+        isLocked = true;
+        Serial.println("ESTADO: BLOQUEADO (LOCKED) CON LA TIERRA");
+    } else {
+        isLocked = false;
+        Serial.println("ESTADO: BUSCANDO SINCRONÍA...");
+    }
+    delay(500);
+}
