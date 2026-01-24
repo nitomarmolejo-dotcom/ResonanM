@@ -1,0 +1,18 @@
+#include <AccelStepper.h>
+
+// Definición de motor (Driver A4988 o similar)
+AccelStepper motor(1, 12, 14); // 1 = Driver, Pin 12 Step, Pin 14 Dir
+
+void loop() {
+    if (isLocked) {
+        // Calculamos la velocidad necesaria para que el motor
+        // complete una revolución sincronizada con la frecuencia medida
+        float stepsPerRevolution = 200.0; 
+        float speedRequired = earthFrequency * stepsPerRevolution;
+        
+        motor.setSpeed(speedRequired);
+        motor.runSpeed();
+    } else {
+        motor.stop(); // No girar si no hay sincronía segura
+    }
+}
